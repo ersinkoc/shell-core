@@ -1,0 +1,71 @@
+{
+  "name": "@oxog/shell-core",
+  "version": "1.0.0",
+  "description": "Zero-Dependency Node.js Shell Commands Library - A modern, high-performance alternative to ShellJS",
+  "keywords": ["shell", "command", "exec", "file", "filesystem", "cross-platform", "typescript", "zero-dependency"],
+  "author": "ersinkoc",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ersinkoc/shell-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ersinkoc/shell-core/issues"
+  },
+  "homepage": "https://github.com/ersinkoc/shell-core#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "bin": {
+    "oxog-shell": "./bin/oxog-shell.js"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run build:types && npm run build:esm && npm run build:cjs",
+    "build:types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outDir dist/types",
+    "build:esm": "tsc --project tsconfig.esm.json",
+    "build:cjs": "tsc --project tsconfig.cjs.json && node scripts/fix-cjs-extensions.js",
+    "clean": "rimraf dist",
+    "dev": "tsc --project tsconfig.json --watch",
+    "test": "node --test --test-reporter=spec test/**/*.test.js",
+    "test:coverage": "c8 --reporter=text --reporter=html npm test",
+    "test:performance": "node test/performance/benchmark.js",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "c8": "^8.0.0",
+    "rimraf": "^5.0.0"
+  },
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
+}

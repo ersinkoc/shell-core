@@ -1,0 +1,64 @@
+# Source files
+src/
+test/
+scripts/
+
+# Configuration files
+.gitignore
+.eslintrc*
+.prettierrc*
+tsconfig*.json
+jest.config.*
+vitest.config.*
+
+# Development files
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+*.test.d.ts
+*.spec.d.ts
+
+# Coverage
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.github/
+
+# Documentation source
+docs/
+
+# Development dependencies
+node_modules/
+
+# Build artifacts
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+
+# Examples (if we add them later)
+examples/
+
+# Benchmarks
+benchmark/
+performance/

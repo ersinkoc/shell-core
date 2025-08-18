@@ -1,0 +1,165 @@
+name: Bug Report
+description: Report a bug or issue with @oxog/shell-core
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: ["ersinkoc"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! 🐛
+        
+        Please fill out the form below with as much detail as possible to help us understand and reproduce the issue.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm you have done the following
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I have tested with the latest version of @oxog/shell-core
+          required: true
+        - label: I have read the documentation
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the bug...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Create shell with config '...'
+        2. Call method '...'
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear description of what you expected to happen
+      placeholder: Describe what should happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened, including full error messages
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Sample
+      description: Minimal code that reproduces the issue
+      render: javascript
+      placeholder: |
+        import { createShell } from '@oxog/shell-core';
+        
+        const shell = createShell();
+        // Your code that reproduces the issue...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: Which operating system are you using?
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS 12 (Monterey)
+        - macOS 13 (Ventura)
+        - macOS 14 (Sonoma)
+        - Ubuntu 20.04
+        - Ubuntu 22.04
+        - Ubuntu 24.04
+        - Other Linux distribution
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: node-version
+    attributes:
+      label: Node.js Version
+      description: Which version of Node.js are you using?
+      options:
+        - "16.x"
+        - "18.x"
+        - "20.x"
+        - "21.x"
+        - "22.x"
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: input
+    id: shell-core-version
+    attributes:
+      label: "@oxog/shell-core Version"
+      description: Which version of @oxog/shell-core are you using?
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: shell
+    attributes:
+      label: Shell/Terminal
+      description: Which shell or terminal are you using?
+      options:
+        - PowerShell
+        - Command Prompt (cmd)
+        - Windows Terminal
+        - bash
+        - zsh
+        - fish
+        - Terminal.app (macOS)
+        - iTerm2 (macOS)
+        - VS Code integrated terminal
+        - Other (please specify in additional context)
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Any additional environment information that might be relevant
+      placeholder: |
+        - Package manager: npm/yarn/pnpm
+        - TypeScript version (if applicable):
+        - Other relevant packages:
+        - CI environment (if applicable):
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context, logs, screenshots, or information about the problem
+      placeholder: Add any other context about the problem here...
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to help fix this issue
+        - label: I can provide more information if needed

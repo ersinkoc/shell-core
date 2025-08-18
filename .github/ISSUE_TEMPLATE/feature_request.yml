@@ -1,0 +1,197 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for @oxog/shell-core
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+assignees: ["ersinkoc"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! 💡
+        
+        Please fill out the form below to help us understand your request and evaluate its potential impact.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm you have done the following
+      options:
+        - label: I have searched existing issues and discussions to avoid duplicates
+          required: true
+        - label: I have read the documentation and examples
+          required: true
+        - label: This feature is not already available in a different form
+          required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: Brief description of the feature you're proposing
+      placeholder: Summarize the feature in 1-2 sentences...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What use case does it enable?
+      placeholder: |
+        - What problem are you trying to solve?
+        - Why is this important?
+        - Who would benefit from this feature?
+        - What's the current workaround (if any)?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your preferred solution. Include API design if applicable.
+      placeholder: |
+        Describe how you envision this feature working:
+        - What would the API look like?
+        - How would it integrate with existing functionality?
+        - What configuration options should be available?
+    validations:
+      required: true
+
+  - type: textarea
+    id: api-design
+    attributes:
+      label: API Design Example
+      description: Show how the feature would be used in code
+      render: javascript
+      placeholder: |
+        // Example usage of the proposed feature
+        import { createShell } from '@oxog/shell-core';
+        
+        const shell = createShell();
+        
+        // Your proposed API usage...
+        await shell.newFeature({
+          option1: 'value1',
+          option2: true
+        });
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: Which category best describes this feature?
+      options:
+        - File System Operations
+        - Command Execution
+        - Text Processing
+        - Pipeline System
+        - Transaction System
+        - Plugin Architecture
+        - Watch System
+        - Error Handling
+        - Configuration
+        - Performance
+        - Documentation
+        - Developer Experience
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve workflow
+        - High - Critical for my use case
+        - Critical - Blocking my adoption
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other solutions did you consider?
+      placeholder: |
+        - Alternative approaches you've considered
+        - Other libraries or tools that provide similar functionality
+        - Reasons why those alternatives don't meet your needs
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Ideas
+      description: If you have ideas about implementation, share them here
+      placeholder: |
+        - Technical approach suggestions
+        - Potential challenges or considerations
+        - Dependencies or prerequisites
+        - Performance implications
+
+  - type: checkboxes
+    id: compatibility
+    attributes:
+      label: Compatibility Considerations
+      description: Please check all that apply
+      options:
+        - label: This feature should work on Windows
+        - label: This feature should work on macOS
+        - label: This feature should work on Linux
+        - label: This feature should maintain backward compatibility
+        - label: This feature should work with TypeScript
+        - label: This feature should have zero additional dependencies
+
+  - type: textarea
+    id: testing
+    attributes:
+      label: Testing Strategy
+      description: How should this feature be tested?
+      placeholder: |
+        - Unit tests needed
+        - Integration tests needed
+        - Performance tests needed
+        - Cross-platform testing requirements
+        - Example test scenarios
+
+  - type: textarea
+    id: documentation
+    attributes:
+      label: Documentation Requirements
+      description: What documentation would be needed for this feature?
+      placeholder: |
+        - README updates needed
+        - New examples required
+        - API documentation changes
+        - Migration guide (if breaking change)
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Real-World Use Cases
+      description: Provide specific examples of how you would use this feature
+      placeholder: |
+        1. Use case: Build automation
+           - How: Integrate with existing build pipelines
+           - Benefits: Reduce build time by 50%
+        
+        2. Use case: Data processing
+           - How: Process large log files
+           - Benefits: Simplified analysis workflow
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to implement this feature
+        - label: I can help with testing this feature
+        - label: I can help with documentation for this feature
+        - label: I can provide more details or examples if needed
