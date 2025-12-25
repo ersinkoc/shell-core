@@ -215,7 +215,8 @@ export class BasePlugin {
         // Override in subclasses
     }
 }
-// Example git plugin implementation
+// BUG-006 FIX: Example git plugin implementation with secure command execution
+// All commands now use spawn() with array arguments to prevent command injection
 export class GitPlugin extends BasePlugin {
     name = 'git';
     version = '1.0.0';
@@ -223,86 +224,95 @@ export class GitPlugin extends BasePlugin {
         'git.status': async () => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
-            const result = await this.shell.exec('git status --porcelain');
+            const result = await this.shell.spawn('git', ['status', '--porcelain']);
             return result.stdout;
         },
         'git.add': async (files = '.') => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
-            const fileArgs = Array.isArray(files) ? files.join(' ') : files;
-            const result = await this.shell.exec(`git add ${fileArgs}`);
+            const fileList = Array.isArray(files) ? files : [files];
+            const result = await this.shell.spawn('git', ['add', ...fileList]);
             return result.stdout;
         },
         'git.commit': async (message, options = {}) => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
-            const amendFlag = options.amend ? '--amend' : '';
-            const result = await this.shell.exec(`git commit ${amendFlag} -m "${message}"`);
+            const args = ['commit'];
+            if (options.amend)
+                args.push('--amend');
+            args.push('-m', message);
+            const result = await this.shell.spawn('git', args);
             return result.stdout;
         },
         'git.push': async (remote = 'origin', branch) => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
-            const branchArg = branch ? ` ${branch}` : '';
-            const result = await this.shell.exec(`git push ${remote}${branchArg}`);
+            const args = ['push', remote];
+            if (branch)
+                args.push(branch);
+            const result = await this.shell.spawn('git', args);
             return result.stdout;
         },
         'git.pull': async (remote = 'origin', branch) => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
-            const branchArg = branch ? ` ${branch}` : '';
-            const result = await this.shell.exec(`git pull ${remote}${branchArg}`);
+            const args = ['pull', remote];
+            if (branch)
+                args.push(branch);
+            const result = await this.shell.spawn('git', args);
             return result.stdout;
         },
         'git.branch': async (name, options = {}) => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
+            const args = ['branch'];
             if (options.delete && name) {
-                const flag = options.force ? '-D' : '-d';
-                const result = await this.shell.exec(`git branch ${flag} ${name}`);
-                return result.stdout;
+                args.push(options.force ? '-D' : '-d', name);
             }
             else if (name) {
-                const result = await this.shell.exec(`git branch ${name}`);
-                return result.stdout;
+                args.push(name);
             }
-            else {
-                const result = await this.shell.exec('git branch');
-                return result.stdout;
-            }
+            const result = await this.shell.spawn('git', args);
+            return result.stdout;
         },
         'git.checkout': async (branch, options = {}) => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
-            const flag = options.create ? '-b' : '';
-            const result = await this.shell.exec(`git checkout ${flag} ${branch}`);
+            const args = ['checkout'];
+            if (options.create)
+                args.push('-b');
+            args.push(branch);
+            const result = await this.shell.spawn('git', args);
             return result.stdout;
         },
         'git.log': async (options = {}) => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
-            let flags = '';
+            const args = ['log'];
             if (options.oneline)
-                flags += ' --oneline';
+                args.push('--oneline');
             if (options.graph)
-                flags += ' --graph';
+                args.push('--graph');
             if (options.all)
-                flags += ' --all';
+                args.push('--all');
             if (options.limit)
-                flags += ` -${options.limit}`;
-            const result = await this.shell.exec(`git log${flags}`);
+                args.push(`-${options.limit}`);
+            const result = await this.shell.spawn('git', args);
             return result.stdout;
         },
         'git.diff': async (files, options = {}) => {
             if (!this.shell)
                 throw new Error('Plugin not installed');
-            let flags = '';
+            const args = ['diff'];
             if (options.cached)
-                flags += ' --cached';
+                args.push('--cached');
             if (options.stat)
-                flags += ' --stat';
-            const fileArgs = files ? (Array.isArray(files) ? files.join(' ') : files) : '';
-            const result = await this.shell.exec(`git diff${flags} ${fileArgs}`);
+                args.push('--stat');
+            if (files) {
+                const fileList = Array.isArray(files) ? files : [files];
+                args.push(...fileList);
+            }
+            const result = await this.shell.spawn('git', args);
             return result.stdout;
         }
     };

@@ -42,7 +42,9 @@ function normalizePath(path) {
     if (path.startsWith('~/')) {
         path = (0, path_1.join)((0, os_1.homedir)(), path.slice(2));
     }
-    return (0, path_1.normalize)(path);
+    // BUG-001 FIX: Normalize and convert all backslashes to forward slashes for cross-platform consistency
+    // Also collapse multiple forward slashes into single slash
+    return (0, path_1.normalize)(path).replace(/\\/g, '/').replace(/\/+/g, '/');
 }
 function resolvePath(path, basePath) {
     const normalizedPath = normalizePath(path);
@@ -167,6 +169,8 @@ function ensureTrailingSeparator(path) {
     return path.endsWith(path_1.sep) ? path : path + path_1.sep;
 }
 function removeTrailingSeparator(path) {
+    // BUG-002 NOTE: Original behavior returns empty string for root path
+    // This is intentional for consistency with path operations that expect empty/non-root paths
     if (path === path_1.sep)
         return '';
     return path.endsWith(path_1.sep) && path.length > 1 ? path.slice(0, -1) : path;
@@ -245,18 +249,25 @@ function formatDuration(ms) {
     return `${(ms / 3600000).toFixed(1)}h`;
 }
 class PathCache {
-    constructor(maxSizeOrTtl = 1000, maxSize) {
+    constructor(ttlOrMaxSize = 60000, maxSize) {
         this.cache = new Map();
-        // Handle both old and new constructor signatures
-        if (typeof maxSizeOrTtl === 'number' && maxSizeOrTtl < 100) {
-            // Likely maxSize passed as first parameter (for backward compatibility)
-            this.maxSize = maxSizeOrTtl;
-            this.ttl = maxSize || 60000;
+        // BUG-003 FIX: Maintain backward compatibility while improving clarity
+        // If only one argument provided and it's small (< 100), treat as maxSize for backward compatibility
+        // Otherwise treat as TTL with optional maxSize second parameter
+        if (maxSize === undefined && ttlOrMaxSize < 100) {
+            // Backward compatibility: single small number is maxSize
+            this.maxSize = ttlOrMaxSize;
+            this.ttl = 60000; // Default TTL
+        }
+        else if (maxSize !== undefined) {
+            // New style: (ttl, maxSize)
+            this.ttl = ttlOrMaxSize;
+            this.maxSize = maxSize;
         }
         else {
-            // TTL passed as first parameter (original signature)
-            this.ttl = maxSizeOrTtl;
-            this.maxSize = maxSize || 1000;
+            // Single large number is TTL
+            this.ttl = ttlOrMaxSize;
+            this.maxSize = 1000; // Default maxSize
         }
     }
     get(key) {

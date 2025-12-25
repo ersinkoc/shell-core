@@ -483,17 +483,26 @@ export class TextOperations {
         const fields = line.split(delimiter);
         const selectedFields: string[] = [];
         
-        // Parse field selection (e.g., "1,3-5,7")
+        // BUG-013 FIX: Parse field selection (e.g., "1,3-5,7") with validation
         const ranges = options.fields.split(',');
         for (const range of ranges) {
           if (range.includes('-')) {
-            const [start, end] = range.split('-').map(n => parseInt(n, 10) - 1);
+            const parts = range.split('-');
+            const start = parseInt(parts[0] ?? '', 10) - 1;
+            const end = parseInt(parts[1] ?? '', 10) - 1;
+
+            // Validate parsed numbers
+            if (isNaN(start) || isNaN(end)) {
+              continue; // Skip invalid ranges
+            }
+
             for (let i = start; i <= end && i < fields.length; i++) {
               if (i >= 0) selectedFields.push(fields[i]!);
             }
           } else {
             const index = parseInt(range, 10) - 1;
-            if (index >= 0 && index < fields.length) {
+            // Validate parsed number
+            if (!isNaN(index) && index >= 0 && index < fields.length) {
               selectedFields.push(fields[index]!);
             }
           }
@@ -507,13 +516,23 @@ export class TextOperations {
         
         for (const range of ranges) {
           if (range.includes('-')) {
-            const [start, end] = range.split('-').map(n => parseInt(n, 10) - 1);
+            // BUG-013 FIX: Validate range parsing
+            const parts = range.split('-');
+            const start = parseInt(parts[0] ?? '', 10) - 1;
+            const end = parseInt(parts[1] ?? '', 10) - 1;
+
+            // Validate parsed numbers
+            if (isNaN(start) || isNaN(end)) {
+              continue; // Skip invalid ranges
+            }
+
             for (let i = start; i <= end && i < line.length; i++) {
               if (i >= 0) selectedChars.push(line[i]!);
             }
           } else {
             const index = parseInt(range, 10) - 1;
-            if (index >= 0 && index < line.length) {
+            // Validate parsed number
+            if (!isNaN(index) && index >= 0 && index < line.length) {
               selectedChars.push(line[index]!);
             }
           }

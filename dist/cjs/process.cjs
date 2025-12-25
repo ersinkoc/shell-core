@@ -59,11 +59,14 @@ class ProcessOperations {
             };
         }
         catch (error) {
+            // BUG-007 FIX: Properly handle type confusion between error codes (strings) and exit codes (numbers)
             const nodeError = error;
             const duration = Date.now() - startTime;
             const stdout = nodeError.stdout || '';
             const stderr = nodeError.stderr || '';
-            const exitCode = nodeError.code ?? 1;
+            // Distinguish between error code (string) and exit code (number)
+            const errorCode = typeof nodeError.code === 'string' ? nodeError.code : undefined;
+            const exitCode = typeof nodeError.code === 'number' ? nodeError.code : 1;
             const signal = nodeError.signal || null;
             if (!options.silent) {
                 if (stdout)
@@ -80,17 +83,22 @@ class ProcessOperations {
                 duration
             };
             // Handle different error types
-            if (nodeError.code === 'ENOENT') {
+            if (errorCode === 'ENOENT') {
                 throw new errors_js_1.ShellError(`Command not found: ${command}`, 'ENOENT', 'exec', undefined, undefined, undefined, { command, ...result });
             }
-            else if (nodeError.code === 'ETIMEOUT') {
+            else if (errorCode === 'ETIMEOUT') {
                 throw errors_js_1.ShellError.timeout('exec', options.timeout ?? 30000);
             }
             else if (typeof nodeError.code === 'number' && nodeError.code !== 0) {
                 // Return the result for non-zero exit codes
                 return result;
             }
+            else if (errorCode) {
+                // Other error codes (EACCES, etc.) should throw
+                throw errors_js_1.ShellError.fromNodeError(nodeError, 'exec');
+            }
             else {
+                // Unknown error
                 throw errors_js_1.ShellError.fromNodeError(nodeError, 'exec');
             }
         }
@@ -121,17 +129,33 @@ class ProcessOperations {
                 windowsHide: options.windowsHide ?? ((0, utils_js_1.isWindows)() ? true : undefined),
                 signal: options.signal
             };
-            // Handle shell option for cross-platform compatibility
+            // BUG-008 FIX: Properly quote arguments when using shell mode
+            // NOTE: For security, it's better to avoid shell mode entirely and use spawn directly
+            // If shell mode is needed, args should be properly escaped
             let actualCommand = command;
             let actualArgs = [...args];
             if (spawnOptions.shell === true) {
+                // When shell is true, construct command string with proper quoting
+                // Helper to escape shell arguments
+                const escapeArg = (arg) => {
+                    if ((0, utils_js_1.isWindows)()) {
+                        // Windows CMD escaping: wrap in quotes and escape internal quotes
+                        return `"${arg.replace(/"/g, '""')}"`;
+                    }
+                    else {
+                        // Unix shell escaping: use single quotes and escape single quotes
+                        return `'${arg.replace(/'/g, "'\\''")}'`;
+                    }
+                };
+                const quotedArgs = args.map(escapeArg).join(' ');
+                const fullCommand = args.length > 0 ? `${command} ${quotedArgs}` : command;
                 if ((0, utils_js_1.isWindows)()) {
                     actualCommand = 'cmd';
-                    actualArgs = ['/c', `${command} ${args.join(' ')}`];
+                    actualArgs = ['/c', fullCommand];
                 }
                 else {
                     actualCommand = '/bin/sh';
-                    actualArgs = ['-c', `${command} ${args.join(' ')}`];
+                    actualArgs = ['-c', fullCommand];
                 }
             }
             const child = (0, child_process_1.spawn)(actualCommand, actualArgs, spawnOptions);
@@ -296,9 +320,13 @@ class ProcessOperations {
         }
     }
     async killall(processName, signal = 'SIGTERM') {
+        // BUG-009 FIX: Properly handle signal names with or without 'SIG' prefix
+        const signalName = signal.toString().startsWith('SIG')
+            ? signal.toString().substring(3) // Remove 'SIG' prefix
+            : signal.toString();
         const command = (0, utils_js_1.isWindows)()
             ? `taskkill /F /IM "${processName}"`
-            : `pkill -${signal.replace('SIG', '')} "${processName}"`;
+            : `pkill -${signalName} "${processName}"`;
         try {
             const result = await this.exec(command, { silent: true });
             return result.success ? 1 : 0; // Simplified count
