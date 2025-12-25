@@ -125,31 +125,40 @@ export async function withRetry<T>(
   options: RetryOptions,
   operationName: string
 ): Promise<T> {
-  let lastError: ShellError;
-  
+  // BUG-014 FIX: Validate that attempts is positive
+  if (options.attempts <= 0) {
+    throw new ShellError(
+      `Invalid retry attempts: ${options.attempts}. Must be greater than 0.`,
+      'INVALID_OPERATION',
+      operationName
+    );
+  }
+
+  let lastError: ShellError | undefined;
+
   for (let attempt = 1; attempt <= options.attempts; attempt++) {
     try {
       return await operation();
     } catch (error) {
-      const shellError = error instanceof ShellError 
-        ? error 
+      const shellError = error instanceof ShellError
+        ? error
         : new ShellError(
             error instanceof Error ? error.message : String(error),
             'INVALID_OPERATION',
             operationName
           );
-      
+
       lastError = shellError;
-      
+
       if (attempt === options.attempts) {
         throw shellError;
       }
-      
+
       // Check if we should retry this error
       if (options.shouldRetry && !options.shouldRetry(shellError)) {
         throw shellError;
       }
-      
+
       if (options.onRetry) {
         try {
           options.onRetry(attempt, shellError);
@@ -157,14 +166,20 @@ export async function withRetry<T>(
           // Continue with retry even if callback fails
         }
       }
-      
+
       const backoff = options.backoff ?? 1;
       const delay = options.delay * Math.pow(backoff, attempt - 1);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  
-  throw lastError!;
+
+  // BUG-004 FIX: This should never be reached due to the logic above,
+  // but provide a safety net instead of using non-null assertion
+  throw lastError ?? new ShellError(
+    `Retry operation failed after ${options.attempts} attempts`,
+    'INVALID_OPERATION',
+    operationName
+  );
 }
 
 export function createDefaultRetryOptions(): RetryOptions {
@@ -172,7 +187,8 @@ export function createDefaultRetryOptions(): RetryOptions {
     attempts: 3,
     delay: 1000,
     backoff: 2,
-    shouldRetry: (error) => (error as any).recoverable,
+    // BUG-005 FIX: Use proper type checking instead of unsafe 'as any' cast
+    shouldRetry: (error) => error instanceof ShellError && error.recoverable,
     onRetry: () => {}
   };
 }

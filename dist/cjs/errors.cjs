@@ -66,6 +66,10 @@ function isRecoverableError(code) {
     return recoverableCodes.includes(code);
 }
 async function withRetry(operation, options, operationName) {
+    // BUG-014 FIX: Validate that attempts is positive
+    if (options.attempts <= 0) {
+        throw new ShellError(`Invalid retry attempts: ${options.attempts}. Must be greater than 0.`, 'INVALID_OPERATION', operationName);
+    }
     let lastError;
     for (let attempt = 1; attempt <= options.attempts; attempt++) {
         try {
@@ -96,14 +100,17 @@ async function withRetry(operation, options, operationName) {
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
-    throw lastError;
+    // BUG-004 FIX: This should never be reached due to the logic above,
+    // but provide a safety net instead of using non-null assertion
+    throw lastError ?? new ShellError(`Retry operation failed after ${options.attempts} attempts`, 'INVALID_OPERATION', operationName);
 }
 function createDefaultRetryOptions() {
     return {
         attempts: 3,
         delay: 1000,
         backoff: 2,
-        shouldRetry: (error) => error.recoverable,
+        // BUG-005 FIX: Use proper type checking instead of unsafe 'as any' cast
+        shouldRetry: (error) => error instanceof ShellError && error.recoverable,
         onRetry: () => { }
     };
 }
